@@ -1,0 +1,52 @@
+<% content_for(:title) { "Conciliación | Cartera" } %>
+
+<h1>Conciliación</h1>
+
+<div class="panel">
+  <h2>Candidatos sugeridos (<%= @applications.total %>)</h2>
+  <p class="sub" style="color:#64748b">El sistema no aplica estos pagos automáticamente: hay evidencia pero no certeza absoluta. Revisa y decide.</p>
+  <%= render "shared/paginated_table", paginator: @applications, columns: [
+    { label: "Movimiento", filter: { name: "movimiento_id", placeholder: "N° mov." } },
+    { label: "Fecha mov.", class: "money" },
+    { label: "Factura", filter: { name: "folio", placeholder: "Buscar folio" } },
+    { label: "Vence", class: "money" },
+    { label: "Monto", class: "money" },
+    "Confianza",
+    "Acciones"
+  ], empty_message: "No hay candidatos por revisar." do %>
+    <% @applications.items.each do |app| %>
+      <tr>
+        <td><%= link_to app.movement.id, movement_path(app.movement), class: "link" %></td>
+        <td class="money"><%= l(app.movement.fecha) %></td>
+        <td><%= link_to "Folio #{app.invoice.folio}", invoice_path(app.invoice), class: "link" %></td>
+        <td class="money"><%= app.invoice.fecha_vencimiento %></td>
+        <td class="money"><%= number_to_currency(app.amount, precision: 0) %></td>
+        <td><span class="badge <%= confianza(app.score) %>"><%= confianza_label(app.score) %></span></td>
+        <td class="actions">
+          <%= button_to "Aprobar", approve_application_path(app), method: :post, class: "btn btn-good" %>
+          <%= button_to "Rechazar", reject_application_path(app), method: :post, class: "btn btn-bad" %>
+        </td>
+      </tr>
+    <% end %>
+  <% end %>
+</div>
+
+<div class="panel">
+  <h2>Movimientos sin conciliar (<%= @unmatched_movements.total %>)</h2>
+  <p class="sub" style="color:#64748b">No tienen evidencia suficiente para asignarlos a ninguna factura.</p>
+  <%= render "shared/paginated_table", paginator: @unmatched_movements, columns: [
+    "Fecha",
+    { label: "Monto", class: "money" },
+    "Descripción",
+    { label: "Referencia", filter: { name: "referencia", placeholder: "Buscar referencia" } }
+  ], empty_message: "No hay movimientos sin conciliar." do %>
+    <% @unmatched_movements.items.each do |m| %>
+      <tr>
+        <td><%= l(m.fecha) %></td>
+        <td class="money"><%= number_to_currency(m.monto, precision: 0) %></td>
+        <td><%= truncate(m.descripcion.to_s, length: 40) %></td>
+        <td><%= m.referencia %></td>
+      </tr>
+    <% end %>
+  <% end %>
+</div>
