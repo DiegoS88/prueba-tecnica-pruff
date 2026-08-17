@@ -1,0 +1,56 @@
+<% content_for(:title) { "Movimiento ##{@movement.id} | Cartera" } %>
+
+<%= link_to "← Movimientos", movements_path %>
+
+<h1>Movimiento #<%= @movement.id %></h1>
+
+<div class="kv">
+  <div><div class="k">Fecha</div><div class="v"><%= l(@movement.fecha) %></div></div>
+  <div><div class="k">Monto</div><div class="v"><%= number_to_currency(@movement.monto, precision: 2) %></div></div>
+  <div><div class="k">Descripción</div><div class="v"><%= @movement.descripcion %></div></div>
+  <div><div class="k">Referencia</div><div class="v"><%= @movement.referencia %></div></div>
+  <div><div class="k">Asignado</div><div class="v"><%= number_to_currency(@movement.confirmed_amount, precision: 2) %></div></div>
+  <div><div class="k">Sin asignar</div><div class="v"><%= number_to_currency(@movement.unassigned_amount, precision: 2) %></div></div>
+  <div><div class="k">Conciliación</div><div class="v"><span class="badge <%= @movement.conciliacion %>"><%= conciliacion_movimiento_label(@movement.conciliacion) %></span></div></div>
+</div>
+
+<div class="panel">
+  <h2>Facturas asociadas</h2>
+  <% if @movement.payment_applications.any? %>
+    <table>
+      <tr><th>Folio</th><th class="money">Monto aplicado</th><th>Estado</th><th>Score</th><th>Evidencia</th><th>Acciones</th></tr>
+      <% @movement.payment_applications.each do |app| %>
+        <tr>
+          <td><%= link_to app.invoice.folio, invoice_path(app.invoice), class: "link" %></td>
+          <td class="money"><%= number_to_currency(app.amount, precision: 2) %></td>
+          <td><span class="badge <%= app.status %>"><%= aplicacion_status_label(app.status) %></span></td>
+          <td><%= app.score %></td>
+          <td><%= (app.evidence || []).map { |s| senal_label(s) }.join(", ") %></td>
+          <td class="actions">
+            <% if app.suggested? %>
+              <%= button_to "Aprobar", approve_application_path(app), method: :post, class: "btn btn-good" %>
+              <%= button_to "Rechazar", reject_application_path(app), method: :post, class: "btn btn-bad" %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </table>
+  <% else %>
+    <p>No asociado a ninguna factura.</p>
+  <% end %>
+</div>
+
+<div class="panel">
+  <h2>Trazabilidad</h2>
+  <ul class="timeline">
+    <% @timeline.each do |event| %>
+      <li>
+        <strong><%= evento_label(event[:tipo]) %></strong>
+        <div class="meta"><%= l(event[:fecha], format: :long) %> · <%= event[:actor] %></div>
+        <% if event[:detalles].present? %>
+          <pre><%= JSON.pretty_generate(event[:detalles]) %></pre>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</div>

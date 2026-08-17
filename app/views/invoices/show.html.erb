@@ -1,0 +1,60 @@
+<% content_for(:title) { "Factura #{@invoice.folio} | Cartera" } %>
+
+<%= link_to "← Facturas", invoices_path %>
+
+<h1>Factura <%= @invoice.folio %></h1>
+
+<div class="kv">
+  <div><div class="k">Deudor</div><div class="v"><%= @invoice.rut_deudor %></div></div>
+  <div><div class="k">Cliente (cedente)</div><div class="v"><%= @invoice.rut_cliente %></div></div>
+  <div><div class="k">Emisión</div><div class="v"><%= @invoice.fecha_emision %></div></div>
+  <div><div class="k">Vencimiento</div><div class="v"><%= @invoice.fecha_vencimiento %></div></div>
+  <div><div class="k">Moneda</div><div class="v"><%= @invoice.moneda %></div></div>
+  <div><div class="k">Monto</div><div class="v"><%= number_to_currency(@invoice.monto, precision: 2) %> <%= @invoice.moneda %></div></div>
+  <div><div class="k">Monto (CLP)</div><div class="v"><%= number_to_currency(@invoice.monto_clp, precision: 2) %></div></div>
+  <div><div class="k">Pagado</div><div class="v"><%= number_to_currency(@invoice.pagado, precision: 2) %></div></div>
+  <div><div class="k">Saldo</div><div class="v"><%= number_to_currency(@invoice.saldo, precision: 2) %></div></div>
+  <div><div class="k">Estado financiero</div><div class="v"><span class="badge <%= @invoice.estado_financiero %>"><%= estado_financiero_label(@invoice.estado_financiero) %></span></div></div>
+  <div><div class="k">Conciliación</div><div class="v"><span class="badge <%= @invoice.estado_conciliacion %>"><%= estado_conciliacion_label(@invoice.estado_conciliacion) %></span></div></div>
+</div>
+
+<div class="panel">
+  <h2>Pagos aplicados</h2>
+  <% if @invoice.payment_applications.any? %>
+    <table>
+      <tr><th>Fecha</th><th>Movimiento</th><th class="money">Monto</th><th>Estado</th><th>Evidencia</th><th>Acciones</th></tr>
+      <% @invoice.payment_applications.order(:created_at).each do |app| %>
+        <tr>
+          <td><%= l(app.movement.fecha) %></td>
+          <td><%= link_to "Mov. ##{app.movement.id}", movement_path(app.movement), class: "link" %></td>
+          <td class="money"><%= number_to_currency(app.amount, precision: 2) %></td>
+          <td><span class="badge <%= app.status %>"><%= aplicacion_status_label(app.status) %></span></td>
+          <td><%= (app.evidence || []).map { |s| senal_label(s) }.join(", ") %></td>
+          <td class="actions">
+            <% if app.suggested? %>
+              <%= button_to "Aprobar", approve_application_path(app), method: :post, class: "btn btn-good" %>
+              <%= button_to "Rechazar", reject_application_path(app), method: :post, class: "btn btn-bad" %>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </table>
+  <% else %>
+    <p>Sin pagos aplicados.</p>
+  <% end %>
+</div>
+
+<div class="panel">
+  <h2>Trazabilidad (recorrido completo)</h2>
+  <ul class="timeline">
+    <% @timeline.each do |event| %>
+      <li>
+        <strong><%= evento_label(event[:tipo]) %></strong>
+        <div class="meta"><%= l(event[:fecha], format: :long) %> · <%= event[:actor] %></div>
+        <% if event[:detalles].present? %>
+          <pre><%= JSON.pretty_generate(event[:detalles]) %></pre>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
+</div>
