@@ -1,0 +1,35 @@
+<% content_for(:title) { "Importaciones | Cartera" } %>
+
+<div class="toolbar">
+  <h1 style="margin:0">Importaciones</h1>
+  <%= link_to "Nueva importación", new_import_path, class: "btn btn-primary" %>
+</div>
+
+<div class="panel">
+  <table>
+    <tr>
+      <th>Fecha</th>
+      <th>Tipo</th>
+      <th>Archivo</th>
+      <th>Estado</th>
+      <th>Nuevos</th>
+      <th>Actualizados</th>
+      <th>Duplicados</th>
+      <th>Errores</th>
+      <th>Usuario</th>
+    </tr>
+    <% @imports.each do |import| %>
+      <tr>
+        <td><%= l(import.created_at, format: :short) %></td>
+        <td><%= import.kind %></td>
+        <td><%= import.file_name %></td>
+        <td><%= import.status %></td>
+        <td><%= import.counts&.fetch("imported", 0) %></td>
+        <td><%= import.counts&.fetch("updated", 0) %></td>
+        <td><%= import.counts&.fetch("duplicates", 0) %></td>
+        <td><%= import.counts&.fetch("errors", 0) %></td>
+        <td><%= import.user.email_address %></td>
+      </tr>
+    <% end %>
+  </table>
+</div>

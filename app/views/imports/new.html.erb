@@ -1,0 +1,21 @@
+<% content_for(:title) { "Importar | Cartera" } %>
+
+<h1>Importar archivos</h1>
+
+<div class="panel">
+  <p>Sube un CSV tal como lo exportas hoy. El sistema normaliza RUTs, fechas, montos y monedas,
+    detecta duplicados y errores por fila, y concilia movimientos contra facturas.
+    Si el archivo ya fue importado, no se duplica nada.</p>
+
+  <%= form_with url: imports_path, local: true, multipart: true do |form| %>
+    <div class="field">
+      <label>Tipo de archivo</label>
+      <%= select_tag "import[kind]", options_for_select([["Facturas", "invoices"], ["Movimientos bancarios", "movements"]]) %>
+    </div>
+    <div class="field">
+      <label>Archivo CSV</label>
+      <%= file_field_tag "import[file]", accept: ".csv", required: true %>
+    </div>
+    <%= submit_tag "Importar", class: "btn btn-primary" %>
+  <% end %>
+</div>
