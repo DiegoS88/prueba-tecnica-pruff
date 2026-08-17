@@ -1,4 +1,4 @@
-# Cartera | Factoring
+# Cartera
 
 Aplicación Rails de conciliación entre **facturas** (emitidas a deudores) y
 **movimientos bancarios** (pagos recibidos). Detecta qué movimientos pagan qué
@@ -10,6 +10,16 @@ revisión humana.
 - Ruby 3.2.3, Rails 8.1.3, PostgreSQL
 - Sin frontend JavaScript: UI en ERB + CSS plano (`app/assets/stylesheets/application.css`)
 - Tests con Minitest (integración + servicios), RuboCop para estilo
+
+## Deploy
+
+La app está desplegada en **Render**: <https://pruebapruff.onrender.com>
+
+- Configuración declarativa en `render.yaml` (PostgreSQL free + web service).
+- El deploy se dispara automáticamente al pushear a `main`.
+- Credenciales demo: `demo@pruff.cl` / `password123`.
+- Nota: el plan free se duerme tras 15 min sin uso; la primera visita tras el
+  reinicio tarda ~1 min en responder.
 
 ## Puesta en marcha
 
