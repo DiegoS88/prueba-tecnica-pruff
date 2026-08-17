@@ -1,0 +1,19 @@
+# PostgreSQL. Local development uses the socket with peer auth (no password).
+# Production uses DATABASE_URL provided by the hosting platform (e.g. Neon/Render).
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: pruebapruff_development
+
+test:
+  <<: *default
+  database: pruebapruff_test
+
+production:
+  <<: *default
+  url: <%= ENV["DATABASE_URL"] %>
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>

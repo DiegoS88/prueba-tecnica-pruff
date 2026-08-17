@@ -1,0 +1,30 @@
+# Rails
+/log/*
+/tmp/*
+/storage/*
+!/log/.keep
+!/tmp/.keep
+!/storage/.keep
+
+# Vendored gems (bundle config set --local path vendor/bundle)
+/vendor/bundle
+/.bundle/
+
+# Zone.Identifier files (Windows download artifacts)
+*.csv:Zone.Identifier
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+config/master.key
+config/credentials/*.key
+
+# Dataset CSVs (se cargan solo por la UI, no van en el repo)
+*.csv
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
