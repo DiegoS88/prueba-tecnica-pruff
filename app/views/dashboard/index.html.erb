@@ -1,0 +1,89 @@
+<% content_for(:title) { "Dashboard | Cartera" } %>
+
+<div class="cards">
+  <div class="card">
+    <div class="label">Saldo por cobrar</div>
+    <div class="value"><%= number_to_currency(@totals[:saldo_total], precision: 0) %></div>
+    <div class="sub"><%= number_with_delimiter(@totals[:n_facturas_con_saldo]) %> facturas con saldo pendiente</div>
+  </div>
+  <div class="card <%= @totals[:saldo_vencido].positive? ? "danger" : "good" %>">
+    <div class="label">Vencido</div>
+    <div class="value"><%= number_to_currency(@totals[:saldo_vencido], precision: 0) %></div>
+    <div class="sub"><%= @totals[:n_facturas_vencidas] %> facturas vencidas</div>
+  </div>
+  <div class="card">
+    <div class="label">Por vencer</div>
+    <div class="value"><%= number_to_currency(@totals[:saldo_por_vencer], precision: 0) %></div>
+    <div class="sub">Deuda que aún no vence</div>
+  </div>
+  <div class="card warn">
+    <div class="label">Movimientos sin conciliar</div>
+    <div class="value"><%= number_to_currency(@totals[:movimientos_sin_asignar], precision: 0) %></div>
+    <div class="sub"><%= @totals[:n_movimientos_sin_conciliar] %> movimientos sin asignar</div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="panel">
+    <h2>Antigüedad de la deuda</h2>
+    <div class="bars">
+      <% max = @aging.values.max.to_f %>
+      <% @aging.each do |bucket, saldo| %>
+        <% next if saldo.zero? %>
+        <div class="bar-row">
+          <div class="bar-label"><%= bucket %> días</div>
+          <div class="bar-track">
+            <div class="bar-fill age-<%= bucket.gsub("+", "").tr("-", "_") %>" style="width: <%= (saldo / max * 100).round(1) %>%"></div>
+          </div>
+          <div class="bar-value"><%= number_to_currency(saldo, precision: 0) %></div>
+        </div>
+      <% end %>
+      <% if @aging.values.all?(&:zero?) %>
+        <p class="muted">No hay deuda vencida.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="panel attention">
+    <h2>Requiere atención</h2>
+    <div class="attention-items">
+      <div class="attention-item">
+        <div class="attention-count"><%= @needs_attention[:sugeridas] %></div>
+        <div class="attention-label">candidatos de pago por revisar</div>
+        <%= link_to "Ir a conciliación", reconciliation_index_path, class: "btn btn-primary" %>
+      </div>
+      <div class="attention-item">
+        <div class="attention-count"><%= @needs_attention[:no_conciliados] %></div>
+        <div class="attention-label">movimientos sin conciliar</div>
+        <%= link_to "Ver movimientos", movements_path(status: "no_conciliado"), class: "btn btn-outline" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if @changes.present? %>
+  <div class="panel">
+    <h2>Qué cambió respecto a <%= l(@changes[:previous_date]) %></h2>
+    <table>
+      <tr><th>Métrica</th><th class="money">Diferencia</th></tr>
+      <tr><td>Saldo por cobrar</td><td class="money"><%= number_to_currency(@changes[:deltas]["saldo_total"], precision: 0) %></td></tr>
+      <tr><td>Vencido</td><td class="money"><%= number_to_currency(@changes[:deltas]["saldo_vencido"], precision: 0) %></td></tr>
+      <tr><td>Por vencer</td><td class="money"><%= number_to_currency(@changes[:deltas]["saldo_por_vencer"], precision: 0) %></td></tr>
+    </table>
+  </div>
+<% end %>
+
+<div class="panel">
+  <h2>Cambios recientes</h2>
+  <table>
+    <tr><th>Cuándo</th><th>Qué</th><th>Detalle</th><th>Quién</th></tr>
+    <% @recent_events.each do |event| %>
+      <tr>
+        <td><%= l(event.created_at, format: :short) %></td>
+        <td><%= evento_label(event.event_type) %></td>
+        <td><%= event.data&.dig("folio") || event.data&.dig("invoice_id") || event.data&.dig("amount") || event.data&.dig("signal") || "—" %></td>
+        <td><%= event.actor_label %></td>
+      </tr>
+    <% end %>
+  </table>
+</div>
