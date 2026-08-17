@@ -1,0 +1,31 @@
+# Blueprint de Render para deploy declarativo.
+# 1. Conecta este repo a Render (Blueprints).
+# 2. Agrega como Environment Variable: RAILS_MASTER_KEY (contenido de config/master.key).
+# 3. Render crea el Postgres, corre las migraciones y levanta la app.
+databases:
+  - name: pruebapruff-db
+    databaseName: pruebapruff
+    user: pruebapruff
+    plan: free
+
+services:
+  - type: web
+    name: pruebapruff
+    runtime: ruby
+    plan: free
+    buildCommand: "./bin/render-build.sh"
+    startCommand: "./bin/rails server"
+    healthCheckPath: /up
+    envVars:
+      - key: RAILS_ENV
+        value: production
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - key: SECRET_KEY_BASE
+        generateValue: true
+      - key: APP_HOST
+        value: pruebapruff.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pruebapruff-db
+          property: connectionString
