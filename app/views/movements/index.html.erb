@@ -1,0 +1,28 @@
+<% content_for(:title) { "Movimientos | Cartera" } %>
+
+<div class="toolbar">
+  <h1 style="margin:0">Movimientos bancarios</h1>
+</div>
+
+<div class="panel">
+  <%= render "shared/paginated_table", paginator: @movements, columns: [
+    { label: "N° Mov.", filter: { name: "movimiento_id", placeholder: "N° mov." } },
+    "Fecha",
+    { label: "Monto", class: "money" },
+    "Descripción",
+    { label: "Referencia", filter: { name: "referencia", placeholder: "Buscar referencia" } },
+    { label: "Conciliación", filter: { name: "status", type: "select", options: [["Todos", ""], ["Conciliado", "conciliado"], ["No conciliado", "no_conciliado"]] } }
+  ], empty_message: "No hay movimientos que coincidan." do %>
+    <% @movements.items.each do |movement| %>
+      <% confirmed = @confirmed_by_movement.fetch(movement.id, 0) %>
+      <tr>
+        <td><%= link_to movement.id, movement_path(movement), class: "link" %></td>
+        <td><%= l(movement.fecha) %></td>
+        <td class="money"><%= number_to_currency(movement.monto, precision: 0) %></td>
+        <td><%= truncate(movement.descripcion.to_s, length: 45) %></td>
+        <td><%= movement.referencia %></td>
+        <td><span class="badge <%= movement.conciliacion(preloaded: confirmed) %>"><%= conciliacion_movimiento_label(movement.conciliacion(preloaded: confirmed)) %></span></td>
+      </tr>
+    <% end %>
+  <% end %>
+</div>

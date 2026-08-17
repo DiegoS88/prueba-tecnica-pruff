@@ -1,0 +1,18 @@
+<% if paginator.total.positive? %>
+  <div class="pagination">
+    <span class="page-info">Página <%= paginator.page %> de <%= paginator.total_pages %></span>
+    <span class="count">Mostrando <%= paginator.first_item %>–<%= paginator.last_item %> de <%= paginator.total %></span>
+    <div class="pager">
+      <% if paginator.prev_page %>
+        <%= link_to "← Anterior", url_for(request.query_parameters.merge(page: paginator.prev_page)), class: "btn btn-sm" %>
+      <% else %>
+        <span class="btn btn-sm disabled">← Anterior</span>
+      <% end %>
+      <% if paginator.next_page %>
+        <%= link_to "Siguiente →", url_for(request.query_parameters.merge(page: paginator.next_page)), class: "btn btn-sm" %>
+      <% else %>
+        <span class="btn btn-sm disabled">Siguiente →</span>
+      <% end %>
+    </div>
+  </div>
+<% end %>

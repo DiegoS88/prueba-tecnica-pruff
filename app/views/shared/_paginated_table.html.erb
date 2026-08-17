@@ -1,0 +1,71 @@
+<%# Componente de tabla paginada reutilizable. Uso:
+  render "shared/paginated_table", paginator: paginator, columns: [
+    "Columna",
+    { label: "Monto", class: "money" },
+    { label: "Estado", filter: { name: "scope", type: "select", options: [["Todas", ""], ["Vencidas", "vencida"]] } },
+    { label: "Folio", filter: { name: "folio", placeholder: "Buscar folio" } }
+  ] do
+    paginator.items.each { |item| ... filas <tr> ... }
+  end
+  Las columnas con :filter agregan un input de filtro bajo el encabezado.
+  El formulario usa el atributo HTML5 `form=` para no anidar forms (evita romper button_to).
+%>
+<%
+  has_filters = columns.any? { |c| c.is_a?(Hash) && c[:filter] }
+  filter_form_id = "table_filters_#{object_id}"
+%>
+<% if has_filters %>
+  <form id="<%= filter_form_id %>" method="get" action="<%= request.path %>" data-turbo="false"></form>
+<% end %>
+
+<table>
+    <thead>
+      <tr>
+        <% columns.each do |col| %>
+          <% if col.is_a?(Hash) %>
+            <th class="<%= col[:class] %>"><%= col[:label] %></th>
+          <% else %>
+            <th><%= col %></th>
+          <% end %>
+        <% end %>
+        <% if has_filters %>
+          <th class="filter-actions"></th>
+        <% end %>
+      </tr>
+      <% if has_filters %>
+        <tr class="filter-row">
+          <% columns.each do |col| %>
+            <th>
+              <% if col.is_a?(Hash) && (f = col[:filter]) %>
+                <% if f[:type] == "select" %>
+                  <select name="<%= f[:name] %>" form="<%= filter_form_id %>">
+                    <% f[:options].each do |label, value| %>
+                      <option value="<%= value %>" <%= "selected" if params[f[:name]].to_s == value.to_s %>><%= label %></option>
+                    <% end %>
+                  </select>
+                <% else %>
+                  <input type="text" name="<%= f[:name] %>" value="<%= params[f[:name]] %>"
+                         placeholder="<%= f[:placeholder] %>" form="<%= filter_form_id %>">
+                <% end %>
+              <% end %>
+            </th>
+          <% end %>
+          <th class="filter-actions">
+            <button type="submit" form="<%= filter_form_id %>" class="btn btn-sm">Filtrar</button>
+            <% if columns.any? { |c| c.is_a?(Hash) && c[:filter] && params[c[:filter][:name]].present? } %>
+              <%= link_to "Limpiar", request.path, class: "btn btn-sm" %>
+            <% end %>
+          </th>
+        </tr>
+      <% end %>
+    </thead>
+    <tbody>
+      <% if paginator.total.positive? %>
+        <%= yield %>
+      <% else %>
+        <tr><td colspan="<%= columns.size + (has_filters ? 1 : 0) %>" class="empty-row"><%= empty_message || "Sin resultados." %></td></tr>
+      <% end %>
+    </tbody>
+  </table>
+
+<%= render "shared/pagination", paginator: paginator %>

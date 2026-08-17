@@ -1,0 +1,30 @@
+<% content_for(:title) { "Facturas | Cartera" } %>
+
+<div class="toolbar">
+  <h1 style="margin:0">Facturas</h1>
+</div>
+
+<div class="panel">
+  <%= render "shared/paginated_table", paginator: @invoices, columns: [
+    { label: "Folio", filter: { name: "folio", placeholder: "Buscar folio" } },
+    { label: "Deudor", filter: { name: "rut_deudor", placeholder: "Buscar RUT" } },
+    "Vencimiento",
+    { label: "Monto", class: "money" },
+    { label: "Pagado", class: "money" },
+    { label: "Estado", filter: { name: "scope", type: "select", options: [["Todos", ""], ["Vencidas", "vencida"], ["Pendientes", "pendiente"], ["Pagadas", "pagada"]] } },
+    "Conciliación"
+  ], empty_message: "No hay facturas que coincidan con los filtros." do %>
+    <% @invoices.items.each do |invoice| %>
+      <% pagado = @confirmed_by_invoice.fetch(invoice.id, 0) %>
+      <tr>
+        <td><%= link_to invoice.folio, invoice_path(invoice), class: "link" %></td>
+        <td><%= invoice.rut_deudor %></td>
+        <td><%= invoice.fecha_vencimiento %></td>
+        <td class="money"><%= number_to_currency(invoice.monto_clp, precision: 0) %></td>
+        <td class="money"><%= number_to_currency(pagado, precision: 0) %></td>
+        <td><span class="badge <%= invoice.estado_financiero(preloaded_pagado: pagado) %>"><%= estado_financiero_label(invoice.estado_financiero(preloaded_pagado: pagado)) %></span></td>
+        <td><span class="badge <%= invoice.estado_conciliacion(preloaded_pagado: pagado) %>"><%= estado_conciliacion_label(invoice.estado_conciliacion(preloaded_pagado: pagado)) %></span></td>
+      </tr>
+    <% end %>
+  <% end %>
+</div>
